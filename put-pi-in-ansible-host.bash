@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# Fix to ignore more networks.
+
 parent='all_pies' # The section where you group your RaspberryPi's
 
 ##################################################
@@ -35,7 +37,7 @@ echo "[${parent}]"
 
 if [ $( which arp-scan 2>/dev/null | wc -l ) -eq 1 ]
 then
-  ifconfig | awk -F ':' '/: flags/ {print $1}' | grep -vE 'lo|loop' | while read interface
+  ifconfig | awk -F ':' '/: flags/ {print $1}' | grep -vE 'lo|loop|docker|ppp|vmnet' | while read interface
   do
     arp-scan --quiet --interface ${interface} --localnet --numeric --ignoredups 2>/dev/null | grep -E "([0-9]{1,3}[\.]){3}[0-9]{1,3}.*([0-9A-Fa-f]{2}[:]){5}[0-9A-Fa-f]{2}"
   done
