@@ -56,7 +56,7 @@ do
 
   if [ -z "${host_name}" ]
   then
-    host_name=$( grep ${ip} /etc/hosts | awk '{print $2}' )
+    host_name=$( grep ${ip} /etc/hosts | awk '{print $2}' | head -1)
   fi
   
   if [ -z "${host_name}" ]

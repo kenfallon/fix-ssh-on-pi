@@ -22,6 +22,9 @@
 
 # v1.1 - changes to reflect that the sha_sum is now SHA-256
 # v1.2 - Changes to split settings to different file, and use losetup
+# v1.3 - Removed requirement to use xmllint (Thanks MachineSaver)
+#        Added support for wifi mac naming (Thanks danielo515)
+#        Moved ethernet naming to firstboot.sh
 
 # Credits to:
 # - http://hackerpublicradio.org/correspondents.php?hostid=225
@@ -65,8 +68,8 @@ done
 
 image_to_download="https://downloads.raspberrypi.org/raspios_full_armhf_latest"
 url_base="https://downloads.raspberrypi.org/raspios_full_armhf/images/"
-version="$( wget -q ${url_base} -O - | xmllint --html --xmlout --xpath 'string(/html/body/table/tr[last()-1]/td/a/@href)' - )"
-sha_file=$( wget -q ${url_base}/${version} -O - | xmllint --html --xmlout --xpath 'string(/html/body/table/tr/td/a[contains(@href, "256")])' - )
+version="$( wget -q ${url_base} -O - | awk -F '"' '/raspios_full_armhf-/ {print $8}' - | sort -nr | head -1 )"
+sha_file=$( wget -q ${url_base}/${version} -O - | awk -F '"' '/armhf-full.zip.sha256/ {print $8}' - )
 sha_sum=$( wget -q "${url_base}/${version}/${sha_file}" -O - | awk '{print $1}' )
 sdcard_mount="/mnt/sdcard"
 
@@ -157,10 +160,6 @@ fi
 if [ -e "${first_boot}" ]
 then
   cp -v "${first_boot}" "${sdcard_mount}/firstboot.sh"
-else
-  echo '#!/bin/bash' > "${sdcard_mount}/firstboot.sh"
-  echo "sed \"s/raspberrypi/\$( sed 's/://g' /sys/class/net/eth0/address )/g\" -i /etc/hostname /etc/hosts" >> "${sdcard_mount}/firstboot.sh"
-  echo '/sbin/shutdown -r 5 "reboot in five minutes"' >> "${sdcard_mount}/firstboot.sh"
 fi
 
 umount_sdcard
