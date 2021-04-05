@@ -146,7 +146,7 @@ fi
 cp -v "${wifi_file}" "${sdcard_mount}/wpa_supplicant.conf"
 if [ ! -e "${sdcard_mount}/wpa_supplicant.conf" ]
 then
-    echo "Can't find the ssh file \"${sdcard_mount}/wpa_supplicant.conf\""
+    echo "Can't find the wpa_supplicant file \"${sdcard_mount}/wpa_supplicant.conf\""
     exit 8
 fi
 
