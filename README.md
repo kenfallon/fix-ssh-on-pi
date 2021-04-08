@@ -19,3 +19,5 @@ Since then I improved the script to:
 - Load it's configuration from a ini file keeping sensitive information separate from the main script.
 - Using [losetup](http://man7.org/linux/man-pages/man8/losetup.8.html) to greatly simplify the mounting of the image.
 - Creation of a [First Boot](https://github.com/nmcclain/raspberian-firstboot) script.
+
+This script is part of a series "Manage your Raspberry Pi fleet with Ansible" which was covered on [opensource.com](https://opensource.com/article/20/9/raspberry-pi-ansible) and on [Hacker Public Radio](http://hackerpublicradio.org/eps.php?id=3173).
