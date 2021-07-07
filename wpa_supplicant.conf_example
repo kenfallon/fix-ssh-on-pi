@@ -1,8 +1,0 @@
-# For more information see:
-# - https://linux.die.net/man/5/wpa_supplicant.conf
-# - https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md
-
-network={
-    ssid="testing"
-    psk="testingPassword"
-}
