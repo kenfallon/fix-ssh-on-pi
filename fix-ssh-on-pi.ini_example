@@ -1,5 +1,0 @@
-#root_password_clear='changeme'
-#pi_password_clear='changeme'
-#public_key_file="/home/change_me/.ssh/id_ed25519_pi.pub"
-#wifi_file="/home/change_me/.ssh/wpa_supplicant.conf"
-first_boot="firstboot.sh"
