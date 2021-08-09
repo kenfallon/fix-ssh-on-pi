@@ -1,2 +1,5 @@
 fix-ssh-on-pi.ini
 wpa_supplicant.conf
+raspberry-key-*
+raspbian_image.zip
+*-*-*-raspios-*-armhf-*.img
