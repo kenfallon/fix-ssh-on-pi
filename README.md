@@ -10,7 +10,8 @@ In episode [hpr2356 :: Safely enabling ssh in the default Raspbian Image](http:/
 - Verify it is valid
 - Extract the image itself
 - Enable ssh for secure remote management
-- Change the default passwords for the root and pi user
+- Change the default passwords for the root and pi user  
+  Generate encrypted + shell escaped password string using `encrypted=$(openssl passwd -6) bash -c 'printf "%q\n" "${encrypted}"'`
 - Secure the ssh server on the Pi
 
 Since then I improved the script to:
