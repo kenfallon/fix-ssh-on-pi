@@ -136,7 +136,7 @@ loop_base=$( losetup --partscan --find --show "${extracted_image}" )
 
 echo "Running: mount ${loop_base}p1 \"${sdcard_mount}\" "
 mount ${loop_base}p1 "${sdcard_mount}"
-ls -al /mnt/sdcard
+ls -al "$sdcard_mount"
 if [ ! -e "${sdcard_mount}/kernel.img" ]
 then
     echo "Can't find the mounted card\"${sdcard_mount}/kernel.img\""
@@ -167,7 +167,7 @@ umount_sdcard
 echo "Mounting the sdcard root disk"
 echo "Running: mount ${loop_base}p2 \"${sdcard_mount}\" "
 mount ${loop_base}p2 "${sdcard_mount}"
-ls -al /mnt/sdcard
+ls -al "$sdcard_mount"
 
 if [ ! -e "${sdcard_mount}/etc/shadow" ]
 then
