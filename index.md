@@ -1,3 +1,7 @@
+From the Hacker Public Radio Episode [hpr2356 :: Safely enabling ssh in
+the default Raspbian Image\" hosted by Ken Fallon
+CC-BY-SA](https://hackerpublicradio.org/eps.php?id=2356)
+
 In this post I will show you how to take a default Raspbian Image and
 safely enable ssh by allowing remote access only with authorized keys.
 

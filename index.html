@@ -9,6 +9,10 @@
 </head>
 
 <body>
+<p>
+From the Hacker Public Radio Episode <a href="https://hackerpublicradio.org/eps.php?id=2356">hpr2356 :: Safely enabling ssh in the default Raspbian Image" hosted by Ken Fallon CC-BY-SA</a> 
+</p>
+
 <p>In this post I will show you how to take a default Raspbian Image and safely enable ssh by allowing remote access only with authorized keys.</p>
 <p>Recently, and correctly, the official Rasbian Pixel distribution disabled ssh with the note that  <em>from now on SSH will be disabled by default on our images. </em>To understand why this is a good thing please read <a href="https://www.raspberrypi.org/blog/a-security-update-for-raspbian-pixel/" target="_blank" rel="noopener">A security update for raspbian pixel</a>. In short, having 11 million computers out there in the hands of non security professionals, with a known username and password, is not a good idea.</p>
 <p>That said there are many cases where you want to access your Pi remotely, and a key part of that is the ability to access it securely via ssh.</p>
