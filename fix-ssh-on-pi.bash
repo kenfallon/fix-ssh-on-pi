@@ -35,11 +35,21 @@
 
 # Change the settings in the file mentioned below.
 
-# 
+function check_tool() {
+  command -v "${1}" >/dev/null 2>&1
+  if [[ ${?} -ne 0 ]]
+  then
+    echo "ERROR: Can't find the application \"${1}\" installed on your system."
+    exit 11
+  fi
+}
+
+for this_tool in 7z awk cat cd chmod chown cp echo exit grep head id ln losetup ls lsblk mkdir mount sed sha256sum sort wc wget
+do
+  check_tool "${this_tool}"
+done
 
 settings_file="fix-ssh-on-pi.ini"
-
-# You should not need to change anything beyond here.
 
 if [ -e "${settings_file}" ]
 then
