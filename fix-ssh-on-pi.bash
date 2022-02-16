@@ -25,6 +25,8 @@
 # v1.3 - Removed requirement to use xmllint (Thanks MachineSaver)
 #        Added support for wifi mac naming (Thanks danielo515)
 #        Moved ethernet naming to firstboot.sh
+# v1.4 - Removed option to encrypt clear password. It's more secure to keep store
+#        the hash anyway. Thanks tillhanke 
 
 # Credits to:
 # - http://hackerpublicradio.org/correspondents.php?hostid=225
@@ -32,6 +34,8 @@
 # - https://github.com/nmcclain/raspberian-firstboot
 
 # Change the settings in the file mentioned below.
+
+# 
 
 settings_file="fix-ssh-on-pi.ini"
 
@@ -52,8 +56,8 @@ else
 fi
 
 variables=(
-  root_password_clear
-  pi_password_clear
+  root_password_hash
+  pi_password_hash
   public_key_file
   wifi_file
 )
@@ -177,9 +181,7 @@ fi
 
 echo "Change the passwords and sshd_config file"
 
-root_password="$( python3 -c "import crypt; print(crypt.crypt('${root_password_clear}', crypt.mksalt(crypt.METHOD_SHA512)))" )"
-pi_password="$( python3 -c "import crypt; print(crypt.crypt('${pi_password_clear}', crypt.mksalt(crypt.METHOD_SHA512)))" )"
-sed -e "s#^root:[^:]\+:#root:${root_password}:#" "${sdcard_mount}/etc/shadow" -e  "s#^pi:[^:]\+:#pi:${pi_password}:#" -i "${sdcard_mount}/etc/shadow"
+sed -e "s#^root:[^:]\+:#root:${root_password_hash}:#" "${sdcard_mount}/etc/shadow" -e  "s#^pi:[^:]\+:#pi:${pi_password_hash}:#" -i "${sdcard_mount}/etc/shadow"
 sed -e 's;^#PasswordAuthentication.*$;PasswordAuthentication no;g' -e 's;^PermitRootLogin .*$;PermitRootLogin no;g' -i "${sdcard_mount}/etc/ssh/sshd_config"
 mkdir "${sdcard_mount}/home/pi/.ssh"
 chmod 0700 "${sdcard_mount}/home/pi/.ssh"

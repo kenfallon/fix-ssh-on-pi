@@ -47,7 +47,7 @@ else
       do ( ping -n -c 1 -W 1 ${base}.${node} >/dev/null 2>&1 & )
   done
   arp -n | grep ether | awk '{print $1" "$3}' 
-fi | grep -iE 'b8:27:eb|dc:a6:32' | sort | while read ip mac
+fi | grep -iE 'b8:27:eb|dc:a6:32|e4:5f:01' | sort | while read ip mac
 do
   host_name=$( awk '/nameserver/ {print $2}' /etc/resolv.conf | while read nameserver
   do 
