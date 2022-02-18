@@ -2,7 +2,15 @@
 # - https://linux.die.net/man/5/wpa_supplicant.conf
 # - https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md
 
+# Country can be mandatory to get network working
+# List here : https://datahub.io/core/country-list
+# ctrl_interface=/var/run/wpa_supplicant
+# country=FR
+# update_config=1
+
 network={
+    scan_ssid=1
     ssid="testing"
     psk="testingPassword"
+    id_str="home"
 }

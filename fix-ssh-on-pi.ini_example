@@ -5,3 +5,4 @@
 #wifi_file="/home/change_me/.ssh/wpa_supplicant.conf"
 first_boot="firstboot.sh"
 os_variant="full"
+#ssh_port=22

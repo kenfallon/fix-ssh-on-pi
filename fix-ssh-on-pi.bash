@@ -65,7 +65,6 @@ variables=(
     pi_password_hash
     public_key_file
     wifi_file
-    os_variant
 )
 
 for variable in "${variables[@]}"; do
@@ -75,15 +74,10 @@ for variable in "${variables[@]}"; do
     fi
 done
 
-if [[ "${os_variant}" != @(lite|full) ]]; then
-    echo "ERROR: wrong os_variant : ${os_variant}. it must be either 'lite', either 'full'."
-    exit 2
-fi
-
-image_to_download="https://downloads.raspberrypi.org/raspios_${os_variant}_armhf_latest"
-url_base="https://downloads.raspberrypi.org/raspios_${os_variant}_armhf/images/"
-version="$(wget -q ${url_base} -O - | awk -F '"' -v pattern="raspios_${os_variant}_armhf-" '$0 ~ pattern {print $8}' - | sort -nr | head -1)"
-sha_file=$(wget -q ${url_base}/${version} -O - | awk -F '"' -v pattern="armhf-${os_variant}.zip.sha256" '$0 ~ pattern {print $8}' -)
+image_to_download="https://downloads.raspberrypi.org/raspios_full_armhf_latest"
+url_base="https://downloads.raspberrypi.org/raspios_full_armhf/images/"
+version="$(wget -q ${url_base} -O - | awk -F '"' '/raspios_full_armhf-/ {print $8}' - | sort -nr | head -1)"
+sha_file=$(wget -q ${url_base}/${version} -O - | awk -F '"' '/armhf-full.zip.sha256/ {print $8}' -)
 sha_sum=$(wget -q "${url_base}/${version}/${sha_file}" -O - | awk '{print $1}')
 sdcard_mount="/mnt/sdcard"
 
@@ -143,7 +137,7 @@ echo "Mounting the sdcard boot disk"
 loop_base=$(losetup --partscan --find --show "${extracted_image}")
 
 echo "Running: mount ${loop_base}p1 \"${sdcard_mount}\" "
-mount "${loop_base}p1" "${sdcard_mount}"
+mount ${loop_base}p1 "${sdcard_mount}"
 ls -al "$sdcard_mount"
 if [ ! -e "${sdcard_mount}/kernel.img" ]; then
     echo "Can't find the mounted card\"${sdcard_mount}/kernel.img\""
@@ -170,11 +164,11 @@ umount_sdcard
 
 echo "Mounting the sdcard root disk"
 echo "Running: mount ${loop_base}p2 \"${sdcard_mount}\" "
-mount "${loop_base}p2" "${sdcard_mount}"
+mount ${loop_base}p2 "${sdcard_mount}"
 ls -al "$sdcard_mount"
+
 if [ ! -e "${sdcard_mount}/etc/shadow" ]; then
     echo "Can't find the mounted card\"${sdcard_mount}/etc/shadow\""
-    losetup --detach ${loop_base}
     exit 10
 fi
 

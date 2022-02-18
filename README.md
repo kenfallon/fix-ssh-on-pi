@@ -26,7 +26,7 @@ This script is part of a series "Manage your Raspberry Pi fleet with Ansible" wh
 
 ### Retrieve everything :
 
-If you're using mac or any system that does not support `losetup`, this can be a little bit painfull to use.
+If you're using mac or any system that does not support `losetup`, this can be a little bit painful to use.
 
 Here's a process setup everything easily :
 
@@ -38,7 +38,7 @@ cd fix-ssh-on-pi
 ### Create a new ssh key for the Raspberry Pi :
 
 ```
-docker run -v $(pwd):/data debian:stable /bin/bash -c "apt update && apt install -y openssh-client && ssh-keygen -t ed25519 -N '' -f /data/raspberry-key-ed25519 -C 'Raspberry Pi keys'"
+docker run -v $(pwd):/data debian:stable /bin/bash -c "apt update && apt install -y openssh-client && mkdir /data/.ssh && ssh-keygen -t ed25519 -N '' -f /data/.ssh/raspberry-key-ed25519 -C 'Raspberry Pi keys'"
 ```
 
 ### Edit configuration files :
@@ -55,10 +55,10 @@ Example for `fix-ssh-on-pi.ini`  :
 ```
 root_password_clear='CHANGEME'
 pi_password_clear='CHANGEME'
-public_key_file="/data/raspberry-key-ed25519.pub"
+public_key_file="/data/.ssh/raspberry-key-ed25519.pub"
 wifi_file="/data/wpa_supplicant.conf"
 first_boot="firstboot.sh"
-os_variant=full
+os_variant="full"
 ```
 
 ### Generate the image with ssh enabled :
@@ -67,7 +67,28 @@ os_variant=full
 docker run -ti --privileged -v /dev:/dev -v $(pwd):/data --workdir /data debian:stable /bin/bash -c "apt update && apt install -y build-essential net-tools wget p7zip-full python3 && bash /data/fix-ssh-on-pi.bash"
 ```
 
-
 ### Burn the image on a sd card :
 
-You can now burn the new file that finish by `-ssh-enabled.img` with the tool of your choice.
+You can now burn the new file that finish by `-ssh-enabled.img` with the tool of your choice, insert into your raspberry and launch it.
+
+### Setup the inventory for ansible :
+
+```
+sudo bash put-pi-in-ansible-host.bash  | tee all_pies.ini
+
+cat >> all_pies.ini <<- EOM
+[all_pies:vars]
+ansible_connection=ssh
+ansible_ssh_user=pi
+ansible_ssh_private_key_file=./.ssh/raspberry-key-ed25519
+EOM
+```
+
+### Check if everything work :
+
+```
+hostname="$(cat all_pies.ini | grep ansible_host | awk '{print $1}' | head -n1).local"
+ssh -i .ssh/raspberry-key-ed25519 pi@$hostname
+
+ansible-playbook --inventory-file all_pies.ini ping-example-playbook.yaml
+```
