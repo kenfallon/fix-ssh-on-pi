@@ -6,21 +6,17 @@ if [ ! -z "${macadd}" ]; then
   sed "s/raspberrypi/${macadd}/g" -i /etc/hostname /etc/hosts
 fi
 
-# FIXME : Put all theses rapi-config in another bash script `raspi-config.sh.example`
-# Set a conditionnal launch only if `raspi-config.sh` exist here.
+# You can customise the system here :
+# Put the minimal stuff, prefer to use ansible to install/configure yours raspberry !
+sudo apt update && apt upgrade -y
+sudo apt install -y raspi-config
 
-# set boot options
-# sudo raspi-config nonint do_boot_behaviour B1 # Boot to CLI & require login
-# sudo raspi-config nonint do_boot_wait 0       # Turn off waiting for network before booting
-# sudo raspi-config nonint do_memory_split 16   # Set the GPU memory limit to 16MB
+sudo raspi-config nonint do_boot_behaviour B1 # Boot to cli (no  gui) & require login (no autologin)
+sudo raspi-config nonint do_boot_wait 0       # Turn off waiting for network before booting
 
-# System Configuration. Can also be done after with ansible
+# Other system configuration examples :
 # sudo raspi-config nonint do_change_timezone Europe/Paris
 # sudo raspi-config nonint do_change_locale fr_FR.UTF-8
 # sudo raspi-config nonint do_configure_keyboard fr
-
-# upgrade packages and set hostname
-# sudo apt update && upgrade -y
-# sudo apt install -y raspi-config vim
 
 /sbin/shutdown -r 5 "reboot in Five minutes"

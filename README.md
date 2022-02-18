@@ -55,10 +55,10 @@ Example for `fix-ssh-on-pi.ini`  :
 ```
 root_password_clear='CHANGEME'
 pi_password_clear='CHANGEME'
-public_key_file="/data/.ssh/raspberry-key-ed25519.pub"
-wifi_file="/data/wpa_supplicant.conf"
-first_boot="firstboot.sh"
-os_variant="full"
+public_key_file='/data/.ssh/raspberry-key-ed25519.pub'
+wifi_file='/data/wpa_supplicant.conf'
+first_boot='firstboot.sh'
+os_variant='full'
 ```
 
 ### Generate the image with ssh enabled :
@@ -69,7 +69,17 @@ docker run -ti --privileged -v /dev:/dev -v $(pwd):/data --workdir /data debian:
 
 ### Burn the image on a sd card :
 
-You can now burn the new file that finish by `-ssh-enabled.img` with the tool of your choice, insert into your raspberry and launch it.
+You can now burn the new file that finish by `-ssh-enabled.img` with the tool of your choice, insert the sdcard into your raspberry and launch it.
+
+Please check [index.md](https://github.com/kenfallon/fix-ssh-on-pi/blob/master/index.md).
+
+TLDR; here is an example with dd :
+
+```
+sudo fdisk -l 	   //  lists all the disks & partitions to get path of the sdcard
+sudo diskutil list // Same on Mac
+dd bs=4M if=FIXME-ssh-enabled.img of=/path/to/disk status=progress`
+```
 
 ### Setup the inventory for ansible :
 

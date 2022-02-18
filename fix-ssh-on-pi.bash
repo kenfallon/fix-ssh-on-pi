@@ -36,72 +36,86 @@
 # Change the settings in the file mentioned below.
 
 function check_tool() {
-    command -v "${1}" >/dev/null 2>&1
-    if [[ ${?} -ne 0 ]]; then
-        echo "ERROR: Can't find the application \"${1}\" installed on your system."
-        exit 11
-    fi
+  command -v "${1}" >/dev/null 2>&1
+  if [[ ${?} -ne 0 ]]; then
+    echo "ERROR: Can't find the application \"${1}\" installed on your system."
+    exit 11
+  fi
 }
 
 for this_tool in 7z awk cat cd chmod chown cp echo exit grep head id ln losetup ls lsblk mkdir mount sed sha256sum sort wc wget; do
-    check_tool "${this_tool}"
+  check_tool "${this_tool}"
 done
 
 settings_file="fix-ssh-on-pi.ini"
 
 if [ -e "${settings_file}" ]; then
-    source "${settings_file}"
+  source "${settings_file}"
 elif [ -e "${HOME}/${settings_file}" ]; then
-    source "${HOME}/${settings_file}"
+  source "${HOME}/${settings_file}"
 elif [ -e "${0%.*}.ini" ]; then
-    source "${0%.*}.ini"
+  source "${0%.*}.ini"
 else
-    echo "ERROR: Can't find the Settings file \"${settings_file}\""
-    exit 1
+  echo "ERROR: Can't find the Settings file \"${settings_file}\""
+  exit 1
 fi
 
 variables=(
-    root_password_hash
-    pi_password_hash
-    public_key_file
-    wifi_file
+  root_password_hash
+  pi_password_hash
+  public_key_file
+  wifi_file
 )
 
 for variable in "${variables[@]}"; do
-    if [[ -z ${!variable+x} ]]; then # indirect expansion here
-        echo "ERROR: The variable \"${variable}\" is missing from your \""${settings_file}"\" file."
-        exit 2
-    fi
+  if [[ -z ${!variable+x} ]]; then # indirect expansion here
+    echo "ERROR: The variable \"${variable}\" is missing from your \""${settings_file}"\" file."
+    exit 2
+  fi
 done
 
-image_to_download="https://downloads.raspberrypi.org/raspios_full_armhf_latest"
-url_base="https://downloads.raspberrypi.org/raspios_full_armhf/images/"
-version="$(wget -q ${url_base} -O - | awk -F '"' '/raspios_full_armhf-/ {print $8}' - | sort -nr | head -1)"
-sha_file=$(wget -q ${url_base}/${version} -O - | awk -F '"' '/armhf-full.zip.sha256/ {print $8}' -)
+if [[ "${os_variant}" != @(lite|full) ]]; then
+  echo "ERROR: wrong os_variant : ${os_variant}. It must be either 'lite' or 'full'."
+  exit 2
+fi
+
+if ! [[ -z ${ssh_port+x} ]]; then
+  if ! [[ ${ssh_port} =~ ^[0-9]+$ ]]; then
+    echo "ERROR: wrong ssh_port : ${ssh_port}. It must be a number"
+    exit 2
+  fi
+else
+  ssh_port=22
+fi
+
+image_to_download="https://downloads.raspberrypi.org/raspios_${os_variant}_armhf_latest"
+url_base="https://downloads.raspberrypi.org/raspios_${os_variant}_armhf/images/"
+version="$(wget -q ${url_base} -O - | awk -F '"' -v pattern="raspios_${os_variant}_armhf-" '$0 ~ pattern {print $8}' - | sort -nr | head -1)"
+sha_file=$(wget -q ${url_base}/${version} -O - | awk -F '"' -v pattern="armhf-${os_variant}.zip.sha256" '$0 ~ pattern {print $8}' -)
 sha_sum=$(wget -q "${url_base}/${version}/${sha_file}" -O - | awk '{print $1}')
 sdcard_mount="/mnt/sdcard"
 
 if [ $(id | grep 'uid=0(root)' | wc -l) -ne "1" ]; then
-    echo "You are not root "
-    exit
+  echo "You are not root "
+  exit
 fi
 
 if [ ! -e "${public_key_file}" ]; then
-    echo "Can't find the public key file \"${public_key_file}\""
-    echo "You can create one using:"
-    echo "   ssh-keygen -t ed25519 -f ./${public_key_file} -C \"Raspberry Pi keys\""
-    exit 3
+  echo "Can't find the public key file \"${public_key_file}\""
+  echo "You can create one using:"
+  echo "   ssh-keygen -t ed25519 -f ./${public_key_file} -C \"Raspberry Pi keys\""
+  exit 3
 fi
 
 function umount_sdcard() {
-    umount "${sdcard_mount}"
-    if [ $(ls -al "${sdcard_mount}" | wc -l) -eq "3" ]; then
-        echo "Sucessfully unmounted \"${sdcard_mount}\""
-        sync
-    else
-        echo "Could not unmount \"${sdcard_mount}\""
-        exit 4
-    fi
+  umount "${sdcard_mount}"
+  if [ $(ls -al "${sdcard_mount}" | wc -l) -eq "3" ]; then
+    echo "Sucessfully unmounted \"${sdcard_mount}\""
+    sync
+  else
+    echo "Could not unmount \"${sdcard_mount}\""
+    exit 4
+  fi
 }
 
 # Download the latest image, using the  --continue "Continue getting a partially-downloaded file"
@@ -110,14 +124,14 @@ wget --continue ${image_to_download} -O raspbian_image.zip
 echo "Checking the SHA-1 of the downloaded image matches \"${sha_sum}\""
 
 if [ $(sha256sum raspbian_image.zip | grep ${sha_sum} | wc -l) -eq "1" ]; then
-    echo "The sha_sums match"
+  echo "The sha_sums match"
 else
-    echo "The sha_sums did not match"
-    exit 5
+  echo "The sha_sums did not match"
+  exit 5
 fi
 
 if [ ! -d "${sdcard_mount}" ]; then
-    mkdir ${sdcard_mount}
+  mkdir ${sdcard_mount}
 fi
 
 # unzip
@@ -127,8 +141,8 @@ echo "The name of the image is \"${extracted_image}\""
 7z x -y raspbian_image.zip
 
 if [ ! -e ${extracted_image} ]; then
-    echo "Can't find the image \"${extracted_image}\""
-    exit 6
+  echo "Can't find the image \"${extracted_image}\""
+  exit 6
 fi
 
 umount_sdcard
@@ -140,24 +154,24 @@ echo "Running: mount ${loop_base}p1 \"${sdcard_mount}\" "
 mount ${loop_base}p1 "${sdcard_mount}"
 ls -al "$sdcard_mount"
 if [ ! -e "${sdcard_mount}/kernel.img" ]; then
-    echo "Can't find the mounted card\"${sdcard_mount}/kernel.img\""
-    exit 7
+  echo "Can't find the mounted card\"${sdcard_mount}/kernel.img\""
+  exit 7
 fi
 
 cp -v "${wifi_file}" "${sdcard_mount}/wpa_supplicant.conf"
 if [ ! -e "${sdcard_mount}/wpa_supplicant.conf" ]; then
-    echo "Can't find the wpa_supplicant file \"${sdcard_mount}/wpa_supplicant.conf\""
-    exit 8
+  echo "Can't find the wpa_supplicant file \"${sdcard_mount}/wpa_supplicant.conf\""
+  exit 8
 fi
 
 touch "${sdcard_mount}/ssh"
 if [ ! -e "${sdcard_mount}/ssh" ]; then
-    echo "Can't find the ssh file \"${sdcard_mount}/ssh\""
-    exit 9
+  echo "Can't find the ssh file \"${sdcard_mount}/ssh\""
+  exit 9
 fi
 
 if [ -e "${first_boot}" ]; then
-    cp -v "${first_boot}" "${sdcard_mount}/firstboot.sh"
+  cp -v "${first_boot}" "${sdcard_mount}/firstboot.sh"
 fi
 
 umount_sdcard
@@ -168,8 +182,8 @@ mount ${loop_base}p2 "${sdcard_mount}"
 ls -al "$sdcard_mount"
 
 if [ ! -e "${sdcard_mount}/etc/shadow" ]; then
-    echo "Can't find the mounted card\"${sdcard_mount}/etc/shadow\""
-    exit 10
+  echo "Can't find the mounted card\"${sdcard_mount}/etc/shadow\""
+  exit 10
 fi
 
 echo "Change the passwords and sshd_config file"

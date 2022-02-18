@@ -1,16 +1,16 @@
 # For more information see:
+# - https://www.daemon-systems.org/man/wpa_supplicant.conf.5.html
 # - https://linux.die.net/man/5/wpa_supplicant.conf
 # - https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md
 
-# Country can be mandatory to get network working
-# List here : https://datahub.io/core/country-list
+# The pathname of the directory in which wpa_supplicant creates UNIX domain socket files
 # ctrl_interface=/var/run/wpa_supplicant
-# country=FR
 # update_config=1
+# /!\ Country can be mandatory to have a working wifi network :
+# country=<Insert 2 letter ISO 3166-1 country code here (GB, FR, DE, US...)>  
 
 network={
-    scan_ssid=1
-    ssid="testing"
-    psk="testingPassword"
-    id_str="home"
+  scan_ssid=1
+  ssid="<Name of your wireless LAN>"
+  psk="<Password for your wireless LAN>"
 }
