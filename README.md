@@ -67,6 +67,8 @@ os_variant='full'
 docker run -ti --privileged -v /dev:/dev -v $(pwd):/data --workdir /data debian:stable /bin/bash -c "apt update && apt install -y build-essential net-tools wget p7zip-full python3 && bash /data/fix-ssh-on-pi.bash"
 ```
 
+Note : the ugly option `-v /dev:/dev` seem to be needed (check [here](https://github.com/moby/moby/issues/27886) for more information). Without that, the losetup command does not successfully retrieve the partition table and create device.
+
 ### Burn the image on a sd card :
 
 You can now burn the new file that finish by `-ssh-enabled.img` with the tool of your choice, insert the sdcard into your raspberry and launch it.
