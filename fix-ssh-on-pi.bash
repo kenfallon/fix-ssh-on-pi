@@ -44,7 +44,7 @@ function check_tool() {
   fi
 }
 
-for this_tool in awk cat cd chmod chown cp echo exit grep head id ln losetup ls lsblk mkdir mount sed sha256sum sort wc wget
+for this_tool in unxz awk cat cd chmod chown cp echo exit grep head id ln losetup ls lsblk mkdir mount sed sha256sum sort wc wget
 do
   check_tool "${this_tool}"
 done
