@@ -1,6 +1,8 @@
-# Generate the password hash using `mkpasswd -m sha512crypt`
+# Generate the root password hash using `mkpasswd -m sha512crypt`
+# Generate username password hash using `echo 'mypassword' | openssl passwd -6 -stdin`
 #root_password_hash='changeme'
-#pi_password_hash='changeme'
+#username='new_username'
+#user_password_hash='changeme'
 #public_key_file="/home/change_me/.ssh/id_ed25519_pi.pub"
 #wifi_file="/home/change_me/.ssh/wpa_supplicant.conf"
 first_boot="firstboot.sh"

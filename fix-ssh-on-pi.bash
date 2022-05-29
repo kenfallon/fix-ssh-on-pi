@@ -44,7 +44,7 @@ function check_tool() {
   fi
 }
 
-for this_tool in 7z awk cat cd chmod chown cp echo exit grep head id ln losetup ls lsblk mkdir mount sed sha256sum sort wc wget
+for this_tool in awk cat cd chmod chown cp echo exit grep head id ln losetup ls lsblk mkdir mount sed sha256sum sort wc wget
 do
   check_tool "${this_tool}"
 done
@@ -67,7 +67,8 @@ fi
 
 variables=(
   root_password_hash
-  pi_password_hash
+  username
+  user_password_hash
   public_key_file
   wifi_file
 )
@@ -80,10 +81,10 @@ do
   fi
 done
 
-image_to_download="https://downloads.raspberrypi.org/raspios_full_armhf_latest"
-url_base="https://downloads.raspberrypi.org/raspios_full_armhf/images/"
-version="$( wget -q ${url_base} -O - | awk -F '"' '/raspios_full_armhf-/ {print $8}' - | sort -nr | head -1 )"
-sha_file=$( wget -q ${url_base}/${version} -O - | awk -F '"' '/armhf-full.zip.sha256/ {print $8}' - )
+image_to_download="https://downloads.raspberrypi.org/raspios_lite_armhf_latest"
+url_base="https://downloads.raspberrypi.org/raspios_lite_armhf/images/"
+version="$( wget -q ${url_base} -O - | awk -F '"' '/raspios_lite_armhf-/ {print $8}' - | sort -nr | head -1 )"
+sha_file=$( wget -q ${url_base}/${version} -O - | awk -F '"' '/armhf-lite.img.xz.sha256/ {print $8}' - )
 sha_sum=$( wget -q "${url_base}/${version}/${sha_file}" -O - | awk '{print $1}' )
 sdcard_mount="/mnt/sdcard"
 
@@ -114,11 +115,11 @@ function umount_sdcard () {
 }
 
 # Download the latest image, using the  --continue "Continue getting a partially-downloaded file"
-wget --continue ${image_to_download} -O raspbian_image.zip
+wget --continue ${image_to_download} -O raspbian_image.img.xz
 
 echo "Checking the SHA-1 of the downloaded image matches \"${sha_sum}\""
 
-if [ $( sha256sum raspbian_image.zip | grep ${sha_sum} | wc -l ) -eq "1" ]
+if [ $( sha256sum raspbian_image.img.xz | grep ${sha_sum} | wc -l ) -eq "1" ]
 then
     echo "The sha_sums match"
 else
@@ -131,11 +132,11 @@ then
   mkdir ${sdcard_mount}
 fi
 
-# unzip
-extracted_image=$( 7z l raspbian_image.zip | awk '/-raspios-/ {print $NF}' )
-echo "The name of the image is \"${extracted_image}\""
+# unxz
+unxz -k -f raspbian_image.img.xz
 
-7z x -y raspbian_image.zip
+extracted_image=$( find . -maxdepth 1 -name "raspbian_image.img" -printf "%P\n" )
+echo "The name of the image is \"${extracted_image}\""
 
 if [ ! -e ${extracted_image} ]
 then
@@ -176,6 +177,8 @@ then
   cp -v "${first_boot}" "${sdcard_mount}/firstboot.sh"
 fi
 
+printf "%s" "${username}:${user_password_hash}" > "${sdcard_mount}/userconf"
+
 umount_sdcard
 
 echo "Mounting the sdcard root disk"
@@ -191,7 +194,7 @@ fi
 
 echo "Change the passwords and sshd_config file"
 
-sed -e "s#^root:[^:]\+:#root:${root_password_hash}:#" "${sdcard_mount}/etc/shadow" -e  "s#^pi:[^:]\+:#pi:${pi_password_hash}:#" -i "${sdcard_mount}/etc/shadow"
+sed -e "s#^root:[^:]\+:#root:${root_password_hash}:#" "${sdcard_mount}/etc/shadow" -i "${sdcard_mount}/etc/shadow"
 sed -e 's;^#PasswordAuthentication.*$;PasswordAuthentication no;g' -e 's;^PermitRootLogin .*$;PermitRootLogin no;g' -i "${sdcard_mount}/etc/ssh/sshd_config"
 mkdir "${sdcard_mount}/home/pi/.ssh"
 chmod 0700 "${sdcard_mount}/home/pi/.ssh"
@@ -199,6 +202,25 @@ chown 1000:1000 "${sdcard_mount}/home/pi/.ssh"
 cat ${public_key_file} >> "${sdcard_mount}/home/pi/.ssh/authorized_keys"
 chown 1000:1000 "${sdcard_mount}/home/pi/.ssh/authorized_keys"
 chmod 0600 "${sdcard_mount}/home/pi/.ssh/authorized_keys"
+
+# Preconfigure localtime here ==> please insert `dpkg-reconfigure -f noninteractive tzdata` in `firstboot.sh`
+#rm -f "${sdcard_mount}/etc/localtime"
+#echo "Europe/Berlin" >"${sdcard_mount}/etc/localtime"
+
+# Preconfigure keyboard layout here ==> please insert `dpkg-reconfigure -f noninteractive keyboard-configuration` in `firstboot.sh`
+#cat >"${sdcard_mount}/etc/default/keyboard" <<'KBEOF'
+#XKBMODEL="pc105"
+#XKBLAYOUT="de"
+#XKBVARIANT=""
+#XKBOPTIONS=""
+
+#KBEOF
+
+# Preconfigure various modules here
+#cat <<EOT >> "${sdcard_mount}/etc/modules"
+#i2c-bcm2708
+#i2c-dev
+#EOT
 
 echo "[Unit]
 Description=FirstBoot
