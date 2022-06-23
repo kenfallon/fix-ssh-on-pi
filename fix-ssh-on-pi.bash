@@ -83,7 +83,7 @@ done
 image_to_download="https://downloads.raspberrypi.org/raspios_full_armhf_latest"
 url_base="https://downloads.raspberrypi.org/raspios_full_armhf/images/"
 version="$( wget -q ${url_base} -O - | awk -F '"' '/raspios_full_armhf-/ {print $8}' - | sort -nr | head -1 )"
-sha_file=$( wget -q ${url_base}/${version} -O - | awk -F '"' '/armhf-full.zip.sha256/ {print $8}' - )
+sha_file=$( wget -q ${url_base}/${version} -O - | awk -F '"' '/armhf-full.img.xz.sha256/ {print $8}' - )
 sha_sum=$( wget -q "${url_base}/${version}/${sha_file}" -O - | awk '{print $1}' )
 sdcard_mount="/mnt/sdcard"
 
