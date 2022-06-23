@@ -114,11 +114,11 @@ function umount_sdcard () {
 }
 
 # Download the latest image, using the  --continue "Continue getting a partially-downloaded file"
-wget --continue ${image_to_download} -O raspbian_image.zip
+wget --continue ${image_to_download} -O raspbian_image.xz
 
 echo "Checking the SHA-1 of the downloaded image matches \"${sha_sum}\""
 
-if [ $( sha256sum raspbian_image.zip | grep ${sha_sum} | wc -l ) -eq "1" ]
+if [ $( sha256sum raspbian_image.xz | grep ${sha_sum} | wc -l ) -eq "1" ]
 then
     echo "The sha_sums match"
 else
@@ -132,10 +132,10 @@ then
 fi
 
 # unzip
-extracted_image=$( 7z l raspbian_image.zip | awk '/-raspios-/ {print $NF}' )
+extracted_image=$( 7z l raspbian_image.xz | awk '/raspbian/ {print $NF}' | tail -1 )
 echo "The name of the image is \"${extracted_image}\""
 
-7z x -y raspbian_image.zip
+7z x -y raspbian_image.xz
 
 if [ ! -e ${extracted_image} ]
 then
