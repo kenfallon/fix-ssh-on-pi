@@ -70,6 +70,7 @@ variables=(
   pi_password_hash
   public_key_file
   wifi_file
+  os_variant
 )
 
 for variable in "${variables[@]}"
@@ -80,10 +81,15 @@ do
   fi
 done
 
-image_to_download="https://downloads.raspberrypi.org/raspios_full_armhf_latest"
-url_base="https://downloads.raspberrypi.org/raspios_full_armhf/images/"
-version="$( wget -q ${url_base} -O - | awk -F '"' '/raspios_full_armhf-/ {print $8}' - | sort -nr | head -1 )"
-sha_file=$( wget -q ${url_base}/${version} -O - | awk -F '"' '/armhf-full.img.xz.sha256/ {print $8}' - )
+if [[ ! ${os_variant} =~ (full|lite) ]]; then
+  echo "ERROR: The variable \"os_variant\" can only take \"full\" and \"lite\" values, but the current value is \"${os_variant}\""
+  exit 3
+fi
+
+image_to_download="https://downloads.raspberrypi.org/raspios_${os_variant}_armhf_latest"
+url_base="https://downloads.raspberrypi.org/raspios_${os_variant}_armhf/images/"
+version="$( wget -q ${url_base} -O - | awk -F '"' -v pattern=raspios_${os_variant}_armhf- '$0 ~ pattern {print $8}' - | sort -nr | head -1 )"
+sha_file=$( wget -q ${url_base}/${version} -O - | awk -F '"' -v pattern=armhf-${os_variant}.img.xz.sha256 '$0 ~ pattern {print $8}' - )
 sha_sum=$( wget -q "${url_base}/${version}/${sha_file}" -O - | awk '{print $1}' )
 sdcard_mount="/mnt/sdcard"
 
@@ -98,7 +104,7 @@ then
     echo "Can't find the public key file \"${public_key_file}\""
     echo "You can create one using:"
     echo "   ssh-keygen -t ed25519 -f ./${public_key_file} -C \"Raspberry Pi keys\""
-    exit 3
+    exit 4
 fi
 
 function umount_sdcard () {
@@ -109,7 +115,7 @@ function umount_sdcard () {
         sync
     else
         echo "Could not unmount \"${sdcard_mount}\""
-        exit 4
+        exit 5
     fi
 }
 
@@ -123,7 +129,7 @@ then
     echo "The sha_sums match"
 else
     echo "The sha_sums did not match"
-    exit 5
+    exit 6
 fi
 
 if [ ! -d "${sdcard_mount}" ]
@@ -140,7 +146,7 @@ echo "The name of the image is \"${extracted_image}\""
 if [ ! -e ${extracted_image} ]
 then
     echo "Can't find the image \"${extracted_image}\""
-    exit 6
+    exit 7
 fi
 
 umount_sdcard
@@ -154,21 +160,21 @@ ls -al "$sdcard_mount"
 if [ ! -e "${sdcard_mount}/kernel.img" ]
 then
     echo "Can't find the mounted card\"${sdcard_mount}/kernel.img\""
-    exit 7
+    exit 8
 fi
 
 cp -v "${wifi_file}" "${sdcard_mount}/wpa_supplicant.conf"
 if [ ! -e "${sdcard_mount}/wpa_supplicant.conf" ]
 then
     echo "Can't find the wpa_supplicant file \"${sdcard_mount}/wpa_supplicant.conf\""
-    exit 8
+    exit 9
 fi
 
 touch "${sdcard_mount}/ssh"
 if [ ! -e "${sdcard_mount}/ssh" ]
 then
     echo "Can't find the ssh file \"${sdcard_mount}/ssh\""
-    exit 9
+    exit 10
 fi
 
 if [ -e "${first_boot}" ]
@@ -186,7 +192,7 @@ ls -al "$sdcard_mount"
 if [ ! -e "${sdcard_mount}/etc/shadow" ]
 then
     echo "Can't find the mounted card\"${sdcard_mount}/etc/shadow\""
-    exit 10
+    exit 11
 fi
 
 echo "Change the passwords and sshd_config file"
