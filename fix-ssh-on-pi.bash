@@ -32,6 +32,7 @@
 #        Moved creation of the passwords and accounts to the ini file
 #        Added support to select which Raspberry_Pi_OS Version to download
 #        Added support set up default users using userconf.txt
+# v1.5.1 Fix checking userconf.txt
 #        
 #        
 #        
@@ -121,16 +122,7 @@ else
   exit 1
 fi
 
-if [ ! -e "${userconf_txt_file}" ]
-then
-  echo_error "Can't find the userconf.txt file \"${userconf_txt_file}\""
-  echo_error "This file should contain a single line of text, consisting of username:encryptedpassword."
-  echo_error "Where the encrypted password is created using:"
-  echo_error "   echo 'mypassword' | openssl passwd -6 -stdin"
-  exit 3
-fi
-
-if [ "$( grep -ic CHANGEME "${settings_file}" "${userconf_txt_file}" 2>/dev/null )" -ne 0 ]
+if [ "$( grep -ic CHANGEME "${settings_file}" 2>/dev/null )" -ne 0 ]
 then
   echo_error "The required changes have not been made to the \""${settings_file}"\" file."
   echo_error "The following variables need to be changed:"
@@ -179,6 +171,24 @@ then
 fi
 
 echo_debug "Requesting  \"${generation}\", \"${os_version}\", \"${architecture}\" "
+
+if [ ! -e "${userconf_txt_file}" ]
+then
+  echo_error "Can't find the userconf.txt file \"${userconf_txt_file}\""
+  echo_error "This file should contain a single line of text, consisting of username:encryptedpassword."
+  echo_error "Where the encrypted password is created using:"
+  echo_error "   echo 'mypassword' | openssl passwd -6 -stdin"
+  exit 3
+fi
+
+if [ "$( grep -ic CHANGEME "${userconf_txt_file}" 2>/dev/null )" -ne 0 ]
+then
+  echo_error "The required changes have not been made to the \""${userconf_txt_file}"\" file."
+  echo_error "The following variables need to be changed:"
+  grep -i CHANGEME "${userconf_txt_file}" | awk -F '=' '{print $1}' #1>&2
+  exit 13
+fi
+
 
 if [ ! -e "${public_key_file}" ]
 then
