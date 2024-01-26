@@ -200,9 +200,9 @@ fi
 
 if [ ! -e "${wifi_file}" ]
 then
-  echo_error "Can't find the wpa_supplicant.conf file \"${wifi_file}\""
+  echo_error "Can't find the default_wifi.nmconnection file \"${wifi_file}\""
   echo_error "You can modify the one provided here:"
-  echo_error "   https://github.com/kenfallon/fix-ssh-on-pi/blob/master/wpa_supplicant.conf_example"
+  echo_error "   https://github.com/kenfallon/fix-ssh-on-pi/blob/master/default_wifi.nmconnection_example"
   exit 14
 fi
 
@@ -349,12 +349,12 @@ else
   exit 22
 fi
 
-cp "${wifi_file}" "${sdcard_mount_p1}/wpa_supplicant.conf"
-if [ -e "${sdcard_mount_p1}/wpa_supplicant.conf" ]
+cp "${wifi_file}" "${sdcard_mount_p2}/etc/NetworkManager/system-connections/default_wifi.nmconnection"
+if [ -e "${sdcard_mount_p2}/default_wifi.nmconnection" ]
 then
   echo_debug "The wifi file \"${wifi_file}\" has been copied"
 else
-  echo_error "Can't find the wpa_supplicant file \"${sdcard_mount_p1}/wpa_supplicant.conf\""
+  echo_error "Can't find the NetworkManager config file \"${sdcard_mount_p2}/default_wifi.nmconnection\""
   exit 8
 fi
 
