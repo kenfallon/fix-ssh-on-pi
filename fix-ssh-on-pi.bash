@@ -349,15 +349,6 @@ else
   exit 22
 fi
 
-cp "${wifi_file}" "${sdcard_mount_p2}/etc/NetworkManager/system-connections/default_wifi.nmconnection"
-if [ -e "${sdcard_mount_p2}/default_wifi.nmconnection" ]
-then
-  echo_debug "The wifi file \"${wifi_file}\" has been copied"
-else
-  echo_error "Can't find the NetworkManager config file \"${sdcard_mount_p2}/default_wifi.nmconnection\""
-  exit 8
-fi
-
 touch "${sdcard_mount_p1}/ssh"
 if [ -e "${sdcard_mount_p1}/ssh" ]
 then
@@ -415,7 +406,7 @@ fi
 echo_debug "Change the passwords and sshd_config file"
 
 sed -e "s#^root:[^:]\+:#root:${root_password_hash}:#" "${sdcard_mount_p2}/etc/shadow" -e  "s#^pi:[^:]\+:#pi:${pi_password_hash}:#" -i "${sdcard_mount_p2}/etc/shadow"
-sed -e 's;^#PasswordAuthentication.*$;PasswordAuthentication no;g' -e 's;^PermitRootLogin .*$;PermitRootLogin no;g' -i "${sdcard_mount_p2}/etc/ssh/sshd_config"
+sed -e 's;^#PasswordAuthentication.*$;PasswordAuthentication no;g' -e 's;^#PermitRootLogin .*$;PermitRootLogin no;g' -i "${sdcard_mount_p2}/etc/ssh/sshd_config"
 mkdir "${sdcard_mount_p2}/home/pi/.ssh"
 chmod 0700 "${sdcard_mount_p2}/home/pi/.ssh"
 chown 1000:1000 "${sdcard_mount_p2}/home/pi/.ssh"
@@ -440,6 +431,17 @@ WantedBy=multi-user.target" > "${sdcard_mount_p2}/lib/systemd/system/firstboot.s
 
 cd "${sdcard_mount_p2}/etc/systemd/system/multi-user.target.wants" && ln -s "/lib/systemd/system/firstboot.service" "./firstboot.service"
 cd -
+
+cp "${wifi_file}" "${sdcard_mount_p2}/etc/NetworkManager/system-connections/default_wifi.nmconnection"
+if [ -e "${sdcard_mount_p2}/etc/NetworkManager/system-connections/default_wifi.nmconnection" ]
+then
+  chmod 700 "${sdcard_mount_p2}/etc/NetworkManager/system-connections"
+  chmod 600 "${sdcard_mount_p2}/etc/NetworkManager/system-connections/default_wifi.nmconnection"
+  echo_debug "The wifi file \"${wifi_file}\" has been copied"
+else
+  echo_error "Can't find the NetworkManager config file \"${sdcard_mount_p2}/default_wifi.nmconnection\""
+  exit 8
+fi
 
 umount_sdcard "${sdcard_mount_p2}"
 losetup --verbose --detach ${loop_base}
