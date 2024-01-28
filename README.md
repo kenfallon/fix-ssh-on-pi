@@ -15,7 +15,7 @@ In episode [hpr2356 :: Safely enabling ssh in the default Raspbian Image](http:/
 
 Since then I improved the script to:
 
-- Enable connections to your WiFi network (wpa_supplicant.conf)
+- Enable connections to your WiFi network (default_wifi.nmconnection)
 - Load it's configuration from a ini file keeping sensitive information separate from the main script.
 - Using [losetup](http://man7.org/linux/man-pages/man8/losetup.8.html) to greatly simplify the mounting of the image.
 - Creation of a [First Boot](https://github.com/nmcclain/raspberian-firstboot) script.

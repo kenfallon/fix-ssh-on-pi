@@ -10,7 +10,7 @@ userconf_txt_file="/home/CHANGEME/.ssh/userconf.txt"
 public_key_file="/home/CHANGEME/.ssh/id_ed25519_pi.pub"
 
 ### https://www.raspberrypi.com/documentation/computers/configuration.html#setting-up-a-headless-raspberry-pi
-wifi_file="/home/CHANGEME/.ssh/wpa_supplicant.conf"
+wifi_file="/home/CHANGEME/.ssh/default_wifi.nmconnection"
 
 ### The script to run at boot
 first_boot="firstboot.sh"
